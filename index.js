@@ -57,9 +57,12 @@ bot.on(message("document"), async (ctx) => {
       responseType: 'arraybuffer', // To handle binary data like PDFs
     });
 
+    // Ensure that the response is treated as binary data (PDF)
+    const pdfBuffer = Buffer.from(pdfResponse.data, 'binary');
+
     // Send the PDF back to the user
     ctx.replyWithDocument({
-      source: pdfResponse.data,
+      source: pdfBuffer,
       filename: file.file_name.replace('.md', '.pdf'), // Changing the file extension to .pdf
     });
   } catch (error) {
