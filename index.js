@@ -1,7 +1,9 @@
-import { Telegraf, Markup } from "telegraf";
-import express from "express";
-import { get } from "axios";
-import { message } from "telegraf/filters"; // Import filter utils
+const { Telegraf } = require("telegraf");
+const express = require("express");
+const axios = require("axios");
+const { message } = require("telegraf/filters");
+
+require("dotenv").config(); // Load environment variables
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const app = express();
@@ -32,7 +34,7 @@ bot.on(message("document"), async (ctx) => {
 
   // Get file link
   const fileLink = await ctx.telegram.getFileLink(file.file_id);
-  const response = await get(fileLink.href, { responseType: "stream" });
+  const response = await axios.get(fileLink.href, { responseType: "stream" });
 
   // Send back the file
   ctx.replyWithDocument({ source: response.data, filename: file.file_name });
@@ -44,6 +46,4 @@ app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
   await setupWebhook(); // Set the webhook on startup
 });
-convert it to commonjs
-
 
