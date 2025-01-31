@@ -42,11 +42,12 @@ bot.on(message("document"), async (ctx) => {
 
     // Send the markdown content to the PDF conversion API
     const css = `
-      * {
-        font-size: 12px;
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Ethiopic&display=swap');
+      *{
+        font-size:12px;
       }
       body {
-        font-family: Arial, sans-serif;
+        font-family: "Noto Sans Ethiopic", "Abyssinica SIL", Arial, sans-serif;  
       }
     `;
 
