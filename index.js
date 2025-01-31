@@ -1,29 +1,28 @@
-require("dotenv").config();
-const { Telegraf } = require("telegraf");
-const express = require("express");
-const axios = require("axios");
+import { Telegraf, Markup } from "telegraf";
+import express from "express";
+import { get } from "axios";
+import { message } from "telegraf/filters"; // Import filter utils
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+const WEBHOOK_URL = process.env.WEBHOOK_URL; // Set this in Render's environment variables
 
 // Middleware for Telegram updates
 app.use(bot.webhookCallback("/telegram"));
 
-// Function to set webhook dynamically
+// Function to set webhook
 async function setupWebhook() {
-  const webhookUrl = `https://${process.env.RENDER_EXTERNAL_HOSTNAME}/telegram`; // Render provides this env variable
   try {
-    await bot.telegram.setWebhook(webhookUrl);
-    console.log(`Webhook set to: ${webhookUrl}`);
+    await bot.telegram.setWebhook(`${WEBHOOK_URL}/telegram`);
+    console.log("Webhook set successfully!");
   } catch (error) {
     console.error("Error setting webhook:", error);
   }
 }
 
-// File handling
-bot.on("document", async (ctx) => {
+// File handling using the recommended filter
+bot.on(message("document"), async (ctx) => {
   const file = ctx.message.document;
 
   // Check if it's a Markdown file
@@ -33,15 +32,18 @@ bot.on("document", async (ctx) => {
 
   // Get file link
   const fileLink = await ctx.telegram.getFileLink(file.file_id);
-  const response = await axios.get(fileLink.href, { responseType: "stream" });
+  const response = await get(fileLink.href, { responseType: "stream" });
 
   // Send back the file
   ctx.replyWithDocument({ source: response.data, filename: file.file_name });
 });
 
-// Start Express server and set webhook
+// Start Express server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-  await setupWebhook();
+  await setupWebhook(); // Set the webhook on startup
 });
+convert it to commonjs
+
 
