@@ -1,30 +1,29 @@
+require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const express = require("express");
 const axios = require("axios");
-const { message } = require("telegraf/filters");
-
-require("dotenv").config(); // Load environment variables
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const app = express();
 
-const WEBHOOK_URL = process.env.WEBHOOK_URL; // Set this in Render's environment variables
+const PORT = process.env.PORT || 3000;
 
 // Middleware for Telegram updates
 app.use(bot.webhookCallback("/telegram"));
 
-// Function to set webhook
+// Function to set webhook dynamically
 async function setupWebhook() {
+  const webhookUrl = `https://${process.env.RENDER_EXTERNAL_HOSTNAME}/telegram`; // Render provides this env variable
   try {
-    await bot.telegram.setWebhook(`${WEBHOOK_URL}/telegram`);
-    console.log("Webhook set successfully!");
+    await bot.telegram.setWebhook(webhookUrl);
+    console.log(`Webhook set to: ${webhookUrl}`);
   } catch (error) {
     console.error("Error setting webhook:", error);
   }
 }
 
-// File handling using the recommended filter
-bot.on(message("document"), async (ctx) => {
+// File handling
+bot.on("document", async (ctx) => {
   const file = ctx.message.document;
 
   // Check if it's a Markdown file
@@ -40,9 +39,9 @@ bot.on(message("document"), async (ctx) => {
   ctx.replyWithDocument({ source: response.data, filename: file.file_name });
 });
 
-// Start Express server
-const PORT = process.env.PORT || 3000;
+// Start Express server and set webhook
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-  await setupWebhook(); // Set the webhook on startup
+  await setupWebhook();
 });
+
